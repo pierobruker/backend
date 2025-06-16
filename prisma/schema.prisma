@@ -1,0 +1,28 @@
+
+// prisma/schema.prisma
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./node_modules/.prisma/client"
+}
+
+
+model Cliente {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  dni       String   @unique
+  pinHash   String
+  cuentas   Cuenta[]
+}
+
+model Cuenta {
+  id        Int      @id @default(autoincrement())
+  numero    String   @unique
+  saldo     Float    @default(0)
+  cliente   Cliente  @relation(fields: [clienteId], references: [id])
+  clienteId Int
+}
