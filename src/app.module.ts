@@ -4,6 +4,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
+import { CuentasModule } from './modules/cuentas/cuentas.module';
 
 
 @Module({
@@ -11,6 +12,7 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
     ConfigModule.forRoot(),
     AuthModule,
     TransactionsModule,
+    CuentasModule,
   ],
   providers: [PrismaService],
   exports: [PrismaService]
