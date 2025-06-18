@@ -1,34 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma.service';
-import { MAE_CUENTA } from '@prisma/client';
+import { PrismaService } from 'src/prisma.service';
 
 @Injectable()
-export class CuentasService {
+export class CuentaService {
   constructor(private prisma: PrismaService) {}
 
-  async crearCuenta(data: {
-    numeroCuenta: string;
-    tipoMoneda: string;
-    clienteId: number;
-  }): Promise<MAE_CUENTA> {
-    return this.prisma.mAE_CUENTA.create({
-      data: {
-        ...data,
-        saldo: 0,
-        estado: 'ACTIVA'
-      }
+  async consultarSaldo(clienteId: number) {
+    const cuenta = await this.prisma.cuenta.findFirst({
+      where: { clienteId },
     });
-  }
 
-  async buscarPorCliente(clienteId: number): Promise<MAE_CUENTA[]> {
-    return this.prisma.mAE_CUENTA.findMany({
-      where: { clienteId }
-    });
+    if (!cuenta) {
+      return { message: 'Cuenta no encontrada' };
+    }
+
+    return {
+      saldo: cuenta.saldo,
+      tipoMoneda: cuenta.tipoMoneda,
+    };
   }
-  // En cuentas.service.ts
-async buscarPorId(id: number) {
-  return this.prisma.mAE_CUENTA.findUnique({
-    where: { id }
-  });
-}
 }

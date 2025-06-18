@@ -4,11 +4,11 @@ import { TransaccionController } from './transaccion.controller';
 
 
 import { PrismaService } from '../../prisma.service';
-import { CuentasModule } from '../cuentas/cuentas.module';
+import { CuentaModule } from '../cuentas/cuentas.module';
 
 
 @Module({
-  imports: [CuentasModule], // Necesario para usar CuentasService
+  imports: [CuentaModule], // Necesario para usar CuentasService
   controllers: [TransaccionController],
   providers: [TransaccionService, PrismaService]
 })

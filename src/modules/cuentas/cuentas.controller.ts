@@ -1,17 +1,12 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
-import { CuentasService } from './cuentas.service';
+import { Controller, Get, Query } from '@nestjs/common';
+import { CuentaService } from './cuentas.service';
 
-@Controller('cuentas')
-export class CuentasController {
-  constructor(private readonly cuentasService: CuentasService) {}
+@Controller('cuenta')
+export class CuentaController {
+  constructor(private readonly cuentasService: CuentaService) {}
 
-  @Post()
-  crear(@Body() data: Parameters<CuentasService['crearCuenta']>[0]) {
-    return this.cuentasService.crearCuenta(data);
-  }
-
-  @Get('cliente/:clienteId')
-  porCliente(@Param('clienteId') clienteId: string) {
-    return this.cuentasService.buscarPorCliente(parseInt(clienteId));
+  @Get('saldo')
+  async saldo(@Query('clienteId') clienteId: string) {
+    return this.cuentasService.consultarSaldo(Number(clienteId));
   }
 }
