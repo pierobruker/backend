@@ -1,139 +1,127 @@
-datasource db {
-  provider = "sqlite"
-  url      = "file:./dev.db"
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-model MAE_CLIENTE {
-  id            Int       @id @default(autoincrement()) @map("ID_EMPLEADO")
-  nombre        String    @map("NOMBRE")
-  apellido      String    @map("APELLIDO")
-  dni           String    @unique @map("DNI")
-  tarjeta       String    @map("TARJETA")
-  pinHash       String    @map("PIN_HASH")
-  saldoActual   Float     @default(0) @map("SALDO_ACTUAL")
-  estadoCuenta  String    @default("ACTIVA") @map("ESTADO_CUENTA")
-  cuentas       MAE_CUENTA[]
-  transacciones TRS_TRANSACCION[]
-  eventos       LOG_EVENTO[]
-
-  @@map("MAE_CLIENTE")
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
-model MAE_CUENTA {
-  id           Int       @id @default(autoincrement()) @map("ID_CUENTA")
-  numeroCuenta String    @unique @map("NUMERO_CUENTA")
-  tipoMoneda   String    @default("PEN") @map("TIPO_MONEDA")
-  saldo        Float     @default(0) @map("SALDO")
-  estado       String    @default("ACTIVA") @map("ESTADO")
-  clienteId    Int       @map("ID_CLIENTE")
-  cliente      MAE_CLIENTE @relation(fields: [clienteId], references: [id])
-  transacciones TRS_TRANSACCION[]
-
-  @@map("MAE_CUENTA")
+model Cliente {
+  id            Int           @id @default(autoincrement())
+  nombre        String
+  apellido      String
+  dni           String        @unique
+  tarjeta       String        @unique
+  pinHash       String
+  saldoActual   Float
+  estadoCuenta  String
+  cuentas       Cuenta[]
+  transacciones Transaccion[]
+  eventos       Evento[]
 }
 
-model MAE_CAJERO {
-  id                Int       @id @default(autoincrement()) @map("ID_CAJERO")
-  ubicacion         String    @map("UBICACION")
-  estado            String    @default("OPERATIVO") @map("ESTADO")
-  efectivoDisponible Float     @default(0) @map("EFECTIVO_DISPONIBLE")
-  transacciones     TRS_TRANSACCION[]
-  mantenimientos    TRS_MANTENIMIENTO[]
-
-  @@map("MAE_CAJERO")
+model Cuenta {
+  id            Int           @id @default(autoincrement())
+  numeroCuenta  String        @unique
+  tipoMoneda    String
+  saldo         Float
+  estado        String
+  clienteId     Int
+  cliente       Cliente       @relation(fields: [clienteId], references: [id])
+  transacciones Transaccion[]
 }
 
-model MAE_TIPO_TRANSACCION {
-  id          Int     @id @default(autoincrement()) @map("ID_TIPO")
-  descripcion String  @map("DESCRIPCION")
-  transacciones TRS_TRANSACCION[]
-
-  @@map("MAE_TIPO_TRANSACCION")
+model Cajero {
+  id                 Int             @id @default(autoincrement())
+  ubicacion          String
+  estado             String
+  efectivoDisponible Float
+  agenciaId          Int
+  agencia            Agencia         @relation(fields: [agenciaId], references: [id])
+  transacciones      Transaccion[]
+  mantenimientos     Mantenimiento[]
 }
 
-model MAE_ADMINISTRADOR {
-  id            Int     @id @default(autoincrement()) @map("ID_ADMIN")
-  usuario       String  @unique @map("USUARIO")
-  clave         String  @map("CLAVE")
-  nombreCompleto String @map("NOMBRE_COMPLETO")
-  auditorias    MAE_AUDITORIA[]
-  eventos       LOG_EVENTO[]
-
-  @@map("MAE_ADMINISTRADOR")
+model Agencia {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  direccion String
+  telefono  String
+  estado    String
+  cajeros   Cajero[]
 }
 
-model MAE_AUDITORIA {
-  id                Int       @id @default(autoincrement()) @map("ID_AUDITORIA")
-  detalleCambio     String    @map("DETALLE_DEL_CAMBIO")
-  fechaCreacion     DateTime  @default(now()) @map("FECHA_CREACION")
-  fechaModificacion DateTime? @map("FECHA_MODIFICACION")
-  usuarioCreacion   String    @map("USUARIO_CREACION")
-  usuarioModificacion String? @map("USUARIO_MODIFICACION")
-  estado            String    @map("ESTADO")
-  eliminado         Boolean   @default(false) @map("ELIMINADO")
-  adminId           Int       @map("ID_ADMIN")
-  admin             MAE_ADMINISTRADOR @relation(fields: [adminId], references: [id])
-
-  @@map("MAE_AUDITORIA")
+model Administrador {
+  id             Int         @id @default(autoincrement())
+  usuario        String      @unique
+  clave          String
+  nombreCompleto String
+  auditorias     Auditoria[]
+  eventos        Evento[]
 }
 
-model TRS_TRANSACCION {
-  id              Int       @id @default(autoincrement()) @map("ID_TRANSACCION")
-  cuentaId        Int       @map("ID_CUENTA")
-  cajeroId        Int?      @map("ID_CAJERO")
-  tipoId          Int       @map("ID_TIPO")
-  monto           Float     @map("MONTO")
-  fechaHora       DateTime  @default(now()) @map("FECHA_HORA")
-  saldoResultante Float     @map("SALDO_RESULTANTE")
-  estado          String    @default("COMPLETADA") @map("ESTADO")
-
-  cuenta          MAE_CUENTA @relation(fields: [cuentaId], references: [id])
-  cajero          MAE_CAJERO? @relation(fields: [cajeroId], references: [id])
-  tipo            MAE_TIPO_TRANSACCION @relation(fields: [tipoId], references: [id])
-  cliente         MAE_CLIENTE @relation(fields: [], references: [id])
-
-  @@map("TRS_TRANSACCION")
+model Auditoria {
+  id                  Int           @id @default(autoincrement())
+  detalleDelCambio    String
+  fechaCreacion       DateTime      @default(now())
+  fechaModificacion   DateTime?
+  usuarioCreacion     String
+  usuarioModificacion String?
+  estado              String
+  eliminado           Boolean       @default(false)
+  administradorId     Int
+  administrador       Administrador @relation(fields: [administradorId], references: [id])
 }
 
-model TRS_MANTENIMIENTO {
-  id              Int       @id @default(autoincrement()) @map("ID_MANTENIMIENTO")
-  tecnicoId       Int       @map("ID_TECNICO")
-  cajeroId        Int       @map("ID_CAJERO")
-  fecha           DateTime  @default(now()) @map("FECHA")
-  tipo            String    @map("TIPO")
-  descripcion     String    @map("DESCRIPCION")
-
-  cajero          MAE_CAJERO @relation(fields: [cajeroId], references: [id])
-  tecnico         MAE_TECNICO @relation(fields: [tecnicoId], references: [id])
-
-  @@map("TRS_MANTENIMIENTO")
+model Tecnico {
+  id             Int             @id @default(autoincrement())
+  nombre         String
+  apellido       String
+  correo         String
+  telefono       String
+  mantenimientos Mantenimiento[]
 }
 
-model LOG_EVENTO {
-  id          Int       @id @default(autoincrement()) @map("ID_EVENTO")
-  clienteId   Int?      @map("ID_CLIENTE")
-  adminId     Int?      @map("ID_ADMIN")
-  descripcion String    @map("DESCRIPCION")
-  tipoEvento  String    @map("TIPO_EVENTO")
-  fecha       DateTime  @default(now())
-
-  cliente     MAE_CLIENTE? @relation(fields: [clienteId], references: [id])
-  admin       MAE_ADMINISTRADOR? @relation(fields: [adminId], references: [id])
-
-  @@map("LOG_EVENTO")
+model Mantenimiento {
+  id          Int      @id @default(autoincrement())
+  fecha       DateTime
+  tipo        String
+  descripcion String
+  tecnicoId   Int
+  tecnico     Tecnico  @relation(fields: [tecnicoId], references: [id])
+  cajeroId    Int
+  cajero      Cajero   @relation(fields: [cajeroId], references: [id])
 }
 
-model MAE_TECNICO {
-  id        Int     @id @default(autoincrement()) @map("ID_CLIENTE")
-  nombre    String  @map("NOMBRE")
-  apellido  String  @map("APELLIDO")
-  correo    String  @map("CORREO")
-  telefono  String  @map("TELEFONO")
-  mantenimientos TRS_MANTENIMIENTO[]
+model TipoTransaccion {
+  id            Int           @id @default(autoincrement())
+  descripcion   String
+  transacciones Transaccion[]
+}
 
-  @@map("MAE_TECNICO")
+model Transaccion {
+  id                Int             @id @default(autoincrement())
+  monto             Float
+  fechaHora         DateTime        @default(now())
+  saldoResultante   Float
+  estado            String
+  cuentaId          Int
+  cuenta            Cuenta          @relation(fields: [cuentaId], references: [id])
+  cajeroId          Int
+  cajero            Cajero          @relation(fields: [cajeroId], references: [id])
+  tipoTransaccionId Int
+  tipoTransaccion   TipoTransaccion @relation(fields: [tipoTransaccionId], references: [id])
+  clienteId         Int
+  cliente           Cliente         @relation(fields: [clienteId], references: [id])
+}
+
+model Evento {
+  id              Int            @id @default(autoincrement())
+  descripcion     String
+  tipoEvento      String
+  clienteId       Int?
+  cliente         Cliente?       @relation(fields: [clienteId], references: [id])
+  administradorId Int?
+  administrador   Administrador? @relation(fields: [administradorId], references: [id])
 }

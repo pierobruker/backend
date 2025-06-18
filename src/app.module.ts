@@ -3,8 +3,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaService } from './prisma.service';
 import { AuthModule } from './modules/auth/auth.module';
-import { TransactionsModule } from './modules/transactions/transactions.module';
+import { TransactionsModule } from './modules/transaccion/transaccion.module';
 import { CuentasModule } from './modules/cuentas/cuentas.module';
+import { TransaccionModule } from './modules/transaccion/transaccion.module';
+import { ClientesModule } from './modules/clientes/clientes.module';
 
 
 @Module({
@@ -18,3 +20,16 @@ import { CuentasModule } from './modules/cuentas/cuentas.module';
   exports: [PrismaService]
 })
 export class AppModule {}
+
+
+
+
+
+
+@Module({
+  imports: [CuentasModule, TransaccionModule, AuthModule, ClientesModule],
+  providers: [PrismaService],
+})
+export class AppModule {}
+
+
